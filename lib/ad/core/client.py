@@ -360,8 +360,7 @@ class Client(object):
 
     def _search_with_paged_results(self, conn, filter, base, scope, attrs):
         """Perform an ldap search operation with paged results."""
-        ctrl = ldap.controls.SimplePagedResultsControl(
-                    ldap.LDAP_CONTROL_PAGE_OID, True, (self._pagesize, ''))
+        ctrl = compat.SimplePagedResultsControl(self._pagesize)
         result = []
         while True:
             msgid = conn.search_ext(base, scope, filter, attrs,
@@ -369,11 +368,14 @@ class Client(object):
             type, data, msgid, ctrls = conn.result3(msgid)
             result += data
             rctrls = [ c for c in ctrls
-                       if c.controlType == ldap.LDAP_CONTROL_PAGE_OID ]
+                       if c.controlType == compat.LDAP_CONTROL_PAGED_RESULTS ]
             if not rctrls:
                 m = 'Server does not honour paged results.'
                 raise ADError, m
-            est, cookie = rctrls[0].controlValue
+
+            size = rctrls[0].size
+            cookie = rctrls[0].cookie
+
             if not cookie:
                 break
             ctrl.controlValue = (self._pagesize, cookie)
