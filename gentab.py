@@ -11,9 +11,9 @@ import os
 # This script generates the PLY parser tables. Note: It needs to be run from
 # the top-level python-ad directory!
 
-from ad.protocol.ldapfilter import Parser as LDAPFilterParser
+from activedirectory.protocol.ldapfilter import Parser as LDAPFilterParser
 
-os.chdir('lib/ad/protocol')
+os.chdir('lib/activedirectory/protocol')
 
 parser = LDAPFilterParser()
 parser._write_parsetab()

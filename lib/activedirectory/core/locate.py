@@ -15,10 +15,10 @@ import dns.resolver
 import dns.reversename
 import dns.exception
 
-from ad.protocol import netlogon
-from ad.protocol.netlogon import Client as NetlogonClient
-from ad.core.exception import Error as ADError
-from ad.util import compat
+from ..protocol import netlogon
+from ..protocol.netlogon import Client as NetlogonClient
+from .exception import Error as ADError
+from ..util import compat
 
 
 LDAP_PORT = 389
@@ -58,7 +58,7 @@ class Locator(object):
         """Constructor."""
         self.m_site = site
         self.m_site_detected = False
-        self.m_logger = logging.getLogger('ad.core.locate')
+        self.m_logger = logging.getLogger('activedirectory.core.locate')
         self.m_cache = {}
         self.m_timeout = self._timeout
 

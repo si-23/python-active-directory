@@ -12,12 +12,12 @@ import logging
 import tempfile
 import ldap
 
-from ad.core.object import factory
-from ad.core.exception import Error
-from ad.core.locate import Locator
-from ad.core.locate import KERBEROS_PORT, KPASSWD_PORT
-from ad.protocol import krb5
-from ad.util import compat
+from .object import factory
+from .exception import Error
+from .locate import Locator
+from .locate import KERBEROS_PORT, KPASSWD_PORT
+from ..protocol import krb5
+from ..util import compat
 
 
 class Creds(object):
@@ -64,7 +64,7 @@ class Creds(object):
         self.m_config = None
         self.m_use_system_config = use_system_config
         self.m_config_cleanup = []
-        self.m_logger = logging.getLogger('ad.core.creds')
+        self.m_logger = logging.getLogger('activedirectory.core.creds')
 
     def __del__(self):
         """Destructor. This releases all currently held credentials and cleans

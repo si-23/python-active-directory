@@ -14,7 +14,7 @@ import pexpect
 
 from nose import SkipTest
 from ConfigParser import ConfigParser
-from ad.util.log import enable_logging
+from activedirectory.util.log import enable_logging
 
 
 class Error(Exception):

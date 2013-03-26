@@ -7,7 +7,7 @@
 # "AUTHORS" for a complete overview.
 
 import re
-from ad.util.parser import Parser as PLYParser
+from activedirectory.util.parser import Parser as PLYParser
 
 
 class Error(Exception):

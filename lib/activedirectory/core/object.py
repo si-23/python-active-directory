@@ -23,8 +23,8 @@ def instance(cls):
 def factory(cls):
     """Create an instance of a class, creating it using the system specific
     rules."""
-    from ad.core.locate import Locator
-    from ad.core.creds import Creds
+    from activedirectory.core.locate import Locator
+    from activedirectory.core.creds import Creds
     if issubclass(cls, Locator):
         return _singleton(Locator)
     elif issubclass(cls, Creds):
@@ -35,7 +35,7 @@ def factory(cls):
 
 def activate(obj):
     """Activate `obj' to be the active instance of its class."""
-    from ad.core.creds import Creds
+    from activedirectory.core.creds import Creds
     if isinstance(obj, Creds):
         obj._activate_config()
         obj._activate_ccache()

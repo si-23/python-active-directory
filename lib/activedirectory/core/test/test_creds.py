@@ -9,13 +9,13 @@
 import os
 import pexpect
 
-from ad.test.base import BaseTest
-from ad.core.creds import Creds as ADCreds
-from ad.core.object import instance, activate
+from activedirectory.test.base import BaseTest
+from activedirectory.core.creds import Creds as ADCreds
+from activedirectory.core.object import instance, activate
 
 
 class TestCreds(BaseTest):
-    """Test suite for ad.core.creds."""
+    """Test suite for activedirectory.core.creds."""
 
     def test_acquire_password(self):
         self.require(ad_user=True)

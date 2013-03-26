@@ -12,8 +12,8 @@ import socket
 import select
 import random
 
-from ad.util import misc
-from ad.protocol import asn1, ldap
+from ..util import misc
+from . import asn1, ldap
 
 
 SERVER_PDC = 0x1

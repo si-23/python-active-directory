@@ -7,20 +7,20 @@
 # "AUTHORS" for a complete overview.
 
 import os.path
-from ad.test.base import BaseTest
-from ad.protocol import ldap
+from activedirectory.test.base import BaseTest
+from activedirectory.protocol import ldap
 
 
 class TestLDAP(BaseTest):
-    """Test suite for ad.util.ldap."""
+    """Test suite for activedirectory.util.ldap."""
 
     def test_encode_real_search_request(self):
         client = ldap.Client()
         filter = '(&(DnsDomain=FREEADI.ORG)(Host=magellan)(NtVer=\\06\\00\\00\\00))'
         req = client.create_search_request('', filter, ('NetLogon',),
                                           scope=ldap.SCOPE_BASE, msgid=4)
-        fname = os.path.join(self.basedir(), 'lib/ad/protocol/test',
-                             'searchrequest.bin')
+        fname = os.path.join(self.basedir(),
+            'lib/activedirectory/protocol/test', 'searchrequest.bin')
         fin = file(fname)
         buf = fin.read()
         fin.close()
@@ -28,8 +28,8 @@ class TestLDAP(BaseTest):
 
     def test_decode_real_search_reply(self):
         client = ldap.Client()
-        fname = os.path.join(self.basedir(), 'lib/ad/protocol/test',
-                             'searchresult.bin')
+        fname = os.path.join(self.basedir(),
+            'lib/activedirectory/protocol/test', 'searchresult.bin')
         fin = file(fname)
         buf = fin.read()
         fin.close()
@@ -40,8 +40,8 @@ class TestLDAP(BaseTest):
         msgid, dn, attrs = reply[0]
         assert msgid == 4
         assert dn == ''
-        fname = os.path.join(self.basedir(), 'lib/ad/protocol/test',
-                             'netlogon.bin')
+        fname = os.path.join(self.basedir(),
+            'lib/activedirectory/protocol/test', 'netlogon.bin')
         fin = file(fname)
         netlogon = fin.read()
         fin.close()

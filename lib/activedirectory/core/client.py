@@ -15,13 +15,13 @@ import ldap.sasl
 import ldap.controls
 import socket
 
-from ad.core.exception import Error as ADError
-from ad.core.object import factory, instance
-from ad.core.creds import Creds
-from ad.core.locate import Locator
-from ad.core.constant import LDAP_PORT, GC_PORT
-from ad.protocol import krb5
-from ad.util import compat
+from .exception import Error as ADError
+from .object import factory, instance
+from .creds import Creds
+from .locate import Locator
+from .constant import LDAP_PORT, GC_PORT
+from ..protocol import krb5
+from ..util import compat
 
 
 class Client(object):

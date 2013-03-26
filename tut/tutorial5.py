@@ -1,6 +1,6 @@
 import sys
-from ad import Client, Creds, Locator, activate
-from ad import AD_USERCTRL_NORMAL_ACCOUNT, AD_USERCTRL_ACCOUNT_DISABLED
+from activedirectory import Client, Creds, Locator, activate
+from activedirectory import AD_USERCTRL_NORMAL_ACCOUNT, AD_USERCTRL_ACCOUNT_DISABLED
 
 domain = 'freeadi.org'
 user = 'Administrator'

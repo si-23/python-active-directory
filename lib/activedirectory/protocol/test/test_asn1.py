@@ -6,7 +6,7 @@
 # Python-AD is copyright (c) 2007-2008 by the Python-AD authors. See the
 # file "AUTHORS" for a complete overview.
 
-from ad.protocol import asn1
+from activedirectory.protocol import asn1
 from nose.tools import assert_raises
 
 

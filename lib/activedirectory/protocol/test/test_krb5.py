@@ -11,8 +11,8 @@ import stat
 import pexpect
 
 from nose.tools import assert_raises
-from ad.protocol import krb5
-from ad.test.base import BaseTest, Error
+from activedirectory.protocol import krb5
+from activedirectory.test.base import BaseTest, Error
 
 
 class TestKrb5(BaseTest):

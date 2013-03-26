@@ -9,8 +9,8 @@
 import math
 import signal
 
-from ad.test.base import BaseTest
-from ad.core.locate import Locator
+from activedirectory.test.base import BaseTest
+from activedirectory.core.locate import Locator
 from threading import Timer
 
 

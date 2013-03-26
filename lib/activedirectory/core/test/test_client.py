@@ -8,13 +8,14 @@
 
 from nose.tools import assert_raises
 
-from ad.test.base import BaseTest
-from ad.core.object import activate
-from ad.core.client import Client
-from ad.core.locate import Locator
-from ad.core.constant import *
-from ad.core.creds import Creds
-from ad.core.exception import Error as ADError, LDAPError
+from activedirectory.test.base import BaseTest
+from activedirectory.core.object import activate
+from activedirectory.core.client import Client
+from activedirectory.core.locate import Locator
+from activedirectory.core.constant import (AD_USERCTRL_ACCOUNT_DISABLED,
+                                           AD_USERCTRL_NORMAL_ACCOUNT)
+from activedirectory.core.creds import Creds
+from activedirectory.core.exception import Error as ADError, LDAPError
 
 
 class TestADClient(BaseTest):

@@ -24,7 +24,7 @@
   </para>
 
   <programlisting>
-  from ad import Creds
+  from activedirectory import Creds
   </programlisting>
 
   <para>
@@ -118,7 +118,7 @@
   </para>
 
   <programlisting>
-  from ad import activate
+  from activedirectory import activate
   activate(creds)
   </programlisting>
 
@@ -147,7 +147,7 @@
   </para>
 
   <programlisting>
-  from ad import Client
+  from activedirectory import Client
   </programlisting>
 
   <para>
@@ -471,7 +471,7 @@
   <package>ad</package> package:
 
   <programlisting>
-  from ad import Locator
+  from activedirectory import Locator
   </programlisting>
 
   <para>
@@ -538,8 +538,8 @@
   the exception as per the code fragment below:
 
   <programlisting>
-  from ad import Error as ADError
-  from ad import LDAPError
+  from activedirectory import Error as ADError
+  from activedirectory import LDAPError
   </programlisting>
 
   The <classname>ADError</classname> exception is raised for all errors that

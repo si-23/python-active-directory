@@ -6,8 +6,7 @@
 # Python-AD is copyright (c) 2007 by the Python-AD authors. See the file
 # "AUTHORS" for a complete overview.
 
-from ad.protocol import asn1
-from ad.protocol import ldapfilter
+from . import asn1, ldapfilter
 
 
 SCOPE_BASE = 0

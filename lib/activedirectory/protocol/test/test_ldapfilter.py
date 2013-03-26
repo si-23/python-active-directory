@@ -7,11 +7,11 @@
 # "AUTHORS" for a complete overview.
 
 from nose.tools import assert_raises
-from ad.protocol import ldapfilter
+from activedirectory.protocol import ldapfilter
 
 
 class TestLDAPFilterParser(object):
-    """Test suite for ad.protocol.ldapfilter."""
+    """Test suite for activedirectory.protocol.ldapfilter."""
 
     def test_equals(self):
         filt = '(type=value)'

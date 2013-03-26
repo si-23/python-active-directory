@@ -12,8 +12,8 @@ import dns.resolver
 
 from threading import Timer
 from nose.tools import assert_raises
-from ad.test.base import BaseTest
-from ad.protocol import netlogon
+from activedirectory.test.base import BaseTest
+from activedirectory.protocol import netlogon
 
 
 class TestDecoder(BaseTest):
@@ -182,8 +182,8 @@ class TestDecoder(BaseTest):
         assert_raises(netlogon.Error, d.start, u'test')
 
     def test_real_packet(self):
-        fname = os.path.join(self.basedir(), 'lib/ad/protocol/test',
-                             'netlogon.bin')
+        fname = os.path.join(self.basedir(),
+            'lib/activedirectory/protocol/test', 'netlogon.bin')
         fin = file(fname)
         buf = fin.read()
         fin.close()

@@ -9,21 +9,26 @@
 from setuptools import setup, Extension
 
 setup(
-    name = 'python-ad',
-    version = '0.9',
-    description = 'An AD client library for Python',
-    author = 'Geert Jansen',
-    author_email = 'geertj@gmail.com',
-    url = 'https://github.com/geertj/python-ad',
-    license = 'MIT',
-    classifiers = ['Development Status :: 4 - Beta',
+    name='python-active-directory',
+    version='0.9',
+    description='An Active Directory client library for Python',
+    author='Geert Jansen',
+    author_email='programmers@theatlantic.com',
+    url='https://github.com/theatlantic/python-active-directory',
+    license='MIT',
+    classifiers=[
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python'],
-    package_dir = {'': 'lib'},
-    packages = ['ad', 'ad.core', 'ad.protocol', 'ad.util'],
-    install_requires = [ 'python-ldap', 'dnspython', 'ply' ],
-    ext_modules = [Extension('ad.protocol.krb5', ['lib/ad/protocol/krb5.c'],
-                             libraries=['krb5'])],
-    test_suite = 'nose.collector'
+    package_dir={'': 'lib'},
+    packages=[
+        'activedirectory', 'activedirectory.core', 'activedirectory.protocol',
+        'activedirectory.util'],
+    install_requires=['python-ldap', 'dnspython', 'ply'],
+    ext_modules=[
+        Extension('activedirectory.protocol.krb5',
+            ['lib/activedirectory/protocol/krb5.c'],
+            libraries=['krb5'])],
+    test_suite='nose.collector'
 )

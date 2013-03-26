@@ -1,4 +1,4 @@
-from ad import Client, Creds, activate
+from activedirectory import Client, Creds, activate
 
 domain = 'freeadi.org'
 user = 'Administrator'
