@@ -414,7 +414,9 @@ initkrb5(void)
 {
     PyObject *module, *dict;
 
+#if !defined(__APPLE__) || !defined(__MACH__)
     initialize_krb5_error_table();
+#endif
 
     module = Py_InitModule("krb5", k5_methods);
     dict = PyModule_GetDict(module);
