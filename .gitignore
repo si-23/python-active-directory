@@ -1,0 +1,15 @@
+/build
+/doc/html
+/ldapfilter_tab.py
+*.egg-info
+/lib/*.egg-info
+/lib/*.egg
+/lib/activedirectory/protocol/krb5.so
+*.pyc
+*.log
+*.egg
+*.db
+*.pid
+pip-log.txt
+.DS_Store
+*swp
