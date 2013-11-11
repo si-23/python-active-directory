@@ -36,7 +36,7 @@ class Client(object):
     _referrals = False
     _pagesize = 500
 
-    def __init__(self, domain):
+    def __init__(self, domain, creds=None):
         """Constructor."""
         self.m_locator = None
         self.m_connections = None
@@ -45,6 +45,7 @@ class Client(object):
         self.m_forest = None
         self.m_schema = None
         self.m_configuration = None
+        self.m_creds = creds
 
     def _locator(self):
         """Return our resource locator."""
@@ -54,10 +55,13 @@ class Client(object):
 
     def _credentials(self):
         """Return our current AD credentials."""
-        creds = instance(Creds)
-        if creds is None or not creds.principal():
-            m = 'No current credentials or credentials not activated.'
-            raise ADError, m
+        if self.m_creds:
+            creds = self.m_creds
+        else:
+            creds = instance(Creds)
+            if creds is None or not creds.principal():
+                m = 'No current credentials or credentials not activated.'
+                raise ADError, m
         return creds
 
     def _fixup_scheme(self, scheme):
