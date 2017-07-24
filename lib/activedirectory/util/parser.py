@@ -42,7 +42,8 @@ class Parser(object):
         self.m_input = input
         self.m_fname = fname
         parser = yacc.yacc(module=self, debug=0,
-                           tabmodule=self._parsetab_name())
+                           tabmodule=self._parsetab_name(),
+                           write_tables=0)
         parsed = parser.parse(lexer=lexer, tracking=True)
         return parsed
 
