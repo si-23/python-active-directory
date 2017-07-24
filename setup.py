@@ -7,6 +7,20 @@
 # "AUTHORS" for a complete overview.
 
 from setuptools import setup, Extension
+import pkg_resources
+
+# Prefer pyldap over python-ldap
+ldap_req = "pyldap"
+try:
+    pkg_resources.get_distribution("python-ldap")
+except pkg_resources.DistributionNotFound:
+    pass
+else:
+    try:
+        pkg_resources.get_distribution("pyldap")
+    except pkg_resources.DistributionNotFound:
+        ldap_req = "python-ldap"
+
 
 setup(
     name='python-active-directory',
@@ -25,7 +39,7 @@ setup(
     packages=[
         'activedirectory', 'activedirectory.core', 'activedirectory.protocol',
         'activedirectory.util'],
-    install_requires=['python-ldap', 'dnspython', 'ply'],
+    install_requires=[ldap_req, 'dnspython', 'ply'],
     ext_modules=[
         Extension('activedirectory.protocol.krb5',
             ['lib/activedirectory/protocol/krb5.c'],
