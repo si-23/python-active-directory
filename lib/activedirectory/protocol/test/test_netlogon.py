@@ -6,11 +6,15 @@
 # Python-AD is copyright (c) 2007 by the Python-AD authors. See the file
 # "AUTHORS" for a complete overview.
 
+from __future__ import absolute_import
 import os.path
 import signal
 import dns.resolver
-
 from threading import Timer
+
+import six
+from six.moves import range
+
 from nose.tools import assert_raises
 from activedirectory.test.base import BaseTest
 from activedirectory.protocol import netlogon
@@ -39,9 +43,9 @@ class TestDecoder(BaseTest):
 
     def test_uint32_long(self):
         s = '\x00\x00\x00\xff'
-        assert self.decode_uint32(s, 0) == (0xff000000L, 4)
+        assert self.decode_uint32(s, 0) == (0xff000000, 4)
         s = '\xff\xff\xff\xff'
-        assert self.decode_uint32(s, 0) == (0xffffffffL, 4)
+        assert self.decode_uint32(s, 0) == (0xffffffff, 4)
 
     def test_error_uint32_null_input(self):
         s = ''
@@ -175,18 +179,17 @@ class TestDecoder(BaseTest):
     def test_error_io_type(self):
         d = netlogon.Decoder()
         assert_raises(netlogon.Error, d.start, 1)
-        assert_raises(netlogon.Error, d.start, 1L)
+        assert_raises(netlogon.Error, d.start, 1)
         assert_raises(netlogon.Error, d.start, ())
         assert_raises(netlogon.Error, d.start, [])
         assert_raises(netlogon.Error, d.start, {})
-        assert_raises(netlogon.Error, d.start, u'test')
+        if six.PY3:
+            assert_raises(netlogon.Error, d.start, b'test')
+        else:
+            assert_raises(netlogon.Error, d.start, u'test')
 
     def test_real_packet(self):
-        fname = os.path.join(self.basedir(),
-            'lib/activedirectory/protocol/test', 'netlogon.bin')
-        fin = file(fname)
-        buf = fin.read()
-        fin.close()
+        buf = self.read_file('lib/activedirectory/protocol/test/netlogon.bin')
         dec = netlogon.Decoder()
         dec.start(buf)
         res = dec.parse()

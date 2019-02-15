@@ -6,14 +6,19 @@
 # Python-AD is copyright (c) 2007 by the Python-AD authors. See the file
 # "AUTHORS" for a complete overview.
 
+from __future__ import absolute_import
 import os
-import os.path
 import sys
+import os.path
+from io import open
 import tempfile
-import pexpect
 
+import six
+from six.moves import range
+from six.moves.configparser import ConfigParser
+import pexpect
 from nose import SkipTest
-from ConfigParser import ConfigParser
+
 from activedirectory.util.log import enable_logging
 
 
@@ -29,9 +34,9 @@ class BaseTest(object):
         config = ConfigParser()
         fname = os.environ.get('FREEADI_TEST_CONFIG')
         if fname is None:
-            raise Error, 'Python-AD test configuration file not specified.'
+            raise Error('Python-AD test configuration file not specified.')
         if not os.access(fname, os.R_OK):
-            raise Error, 'Python-AD test configuration file does not exist.'
+            raise Error('Python-AD test configuration file does not exist.')
         config.read(fname)
         cls.c_config = config
         cls.c_basedir = os.path.dirname(fname)
@@ -74,34 +79,41 @@ class BaseTest(object):
     def basedir(self):
         return self.c_basedir
 
+    def read_file(self, fname):
+        fname = os.path.join(self.basedir(), fname)
+        with open(fname, 'rb') as fin:
+            buf = fin.read()
+
+        return buf.decode('latin_1') if six.PY3 else buf
+
     def require(self, ad_user=False, local_admin=False, ad_admin=False,
                 firewall=False, expensive=False):
         if firewall:
             local_admin = True
         config = self.config()
         if ad_user and not config.getboolean('test', 'readonly_ad_tests'):
-            raise SkipTest, 'test disabled by configuration'
+            raise SkipTest('test disabled by configuration')
             if not config.get('test', 'domain'):
-                raise SkipTest, 'ad tests enabled but no domain given'
+                raise SkipTest('ad tests enabled but no domain given')
             if not config.get('test', 'ad_user_account') or \
                     not config.get('test', 'ad_user_password'):
-                raise SkipTest, 'readonly ad tests enabled but no user/pw given'
+                raise SkipTest('readonly ad tests enabled but no user/pw given')
         if local_admin:
             if not config.getboolean('test', 'intrusive_local_tests'):
-                raise SkipTest, 'test disabled by configuration'
+                raise SkipTest('test disabled by configuration')
             if not config.get('test', 'local_admin_account') or \
                     not config.get('test', 'local_admin_password'):
-                raise SkipTest, 'intrusive local tests enabled but no user/pw given'
+                raise SkipTest('intrusive local tests enabled but no user/pw given')
         if ad_admin:
             if not config.getboolean('test', 'intrusive_ad_tests'):
-                raise SkipTest, 'test disabled by configuration'
+                raise SkipTest('test disabled by configuration')
             if not config.get('test', 'ad_admin_account') or \
                     not config.get('test', 'ad_admin_password'):
-                raise SkipTest, 'intrusive ad tests enabled but no user/pw given'
+                raise SkipTest('intrusive ad tests enabled but no user/pw given')
         if firewall and not self._iptables_supported():
-            raise SkipTest, 'iptables/conntrack not available'
+            raise SkipTest('iptables/conntrack not available')
         if expensive and not config.getboolean('test', 'expensive_tests'):
-            raise SkipTest, 'test disabled by configuration'
+            raise SkipTest('test disabled by configuration')
 
     def domain(self):
         config = self.config()
@@ -148,7 +160,7 @@ class BaseTest(object):
         assert not child.isalive()
         if child.exitstatus != 0:
             m = 'Root command exited with status %s' % child.exitstatus
-            raise Error, m
+            raise Error(m)
         return child.before
 
     def acquire_credentials(self, principal, password, ccache=None):
@@ -163,7 +175,7 @@ class BaseTest(object):
         assert not child.isalive()
         if child.exitstatus != 0:
             m = 'Command kinit exited with status %s' % child.exitstatus
-            raise Error, m
+            raise Error(m)
 
     def list_credentials(self, ccache=None):
         if ccache is None:
@@ -173,7 +185,7 @@ class BaseTest(object):
             child.expect('Ticket cache: ([a-zA-Z0-9_/.:-]+)\r\n')
         except pexpect.EOF:
             m = 'Command klist exited with status %s' % child.exitstatus
-            raise Error, m
+            raise Error(m)
         ccache = child.match.group(1)
         child.expect('Default principal: ([a-zA-Z0-9_/.:@-]+)\r\n')
         principal = child.match.group(1)

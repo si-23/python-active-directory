@@ -5,7 +5,7 @@ dist/
 *.egg-info
 /lib/*.egg-info
 /lib/*.egg
-/lib/activedirectory/protocol/krb5.so
+/lib/activedirectory/protocol/*.so
 *.pyc
 *.log
 *.egg
@@ -14,3 +14,6 @@ dist/
 pip-log.txt
 .DS_Store
 *swp
+.python-version
+.tox
+venv/

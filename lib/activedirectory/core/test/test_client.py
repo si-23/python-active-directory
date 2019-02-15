@@ -6,6 +6,7 @@
 # Python-AD is copyright (c) 2007 by the Python-AD authors. See the file
 # "AUTHORS" for a complete overview.
 
+from __future__ import absolute_import
 from nose.tools import assert_raises
 
 from activedirectory.test.base import BaseTest
@@ -16,6 +17,7 @@ from activedirectory.core.constant import (AD_USERCTRL_ACCOUNT_DISABLED,
                                            AD_USERCTRL_NORMAL_ACCOUNT)
 from activedirectory.core.creds import Creds
 from activedirectory.core.exception import Error as ADError, LDAPError
+from six.moves import range
 
 
 class TestADClient(BaseTest):
@@ -249,7 +251,7 @@ class TestADClient(BaseTest):
         result = client.search('(sAMAccountName=test-usr)')
         assert len(result) == 1
         dn, attrs = result[0]
-        assert attrs.has_key('memberOf')
+        assert 'memberOf' in attrs
         assert len(attrs['memberOf']) == 2000
         self._delete_obj(client, user)
         for group in groups:
@@ -283,8 +285,8 @@ class TestADClient(BaseTest):
         result = client.search(base='', scope='base', server=server)
         assert len(result) == 1
         dns, attrs = result[0]
-        assert attrs.has_key('supportedControl')
-        assert attrs.has_key('supportedSASLMechanisms')
+        assert 'supportedControl' in attrs
+        assert 'supportedSASLMechanisms' in attrs
 
     def test_search_server(self):
         self.require(ad_user=True)

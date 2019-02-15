@@ -6,6 +6,7 @@
 # Python-AD is copyright (c) 2007 by the Python-AD authors. See the file
 # "AUTHORS" for a complete overview.
 
+from __future__ import absolute_import
 import os.path
 from activedirectory.test.base import BaseTest
 from activedirectory.protocol import ldap
@@ -19,20 +20,13 @@ class TestLDAP(BaseTest):
         filter = '(&(DnsDomain=FREEADI.ORG)(Host=magellan)(NtVer=\\06\\00\\00\\00))'
         req = client.create_search_request('', filter, ('NetLogon',),
                                           scope=ldap.SCOPE_BASE, msgid=4)
-        fname = os.path.join(self.basedir(),
-            'lib/activedirectory/protocol/test', 'searchrequest.bin')
-        fin = file(fname)
-        buf = fin.read()
-        fin.close()
+
+        buf = self.read_file('lib/activedirectory/protocol/test/searchrequest.bin')
         assert req == buf
 
     def test_decode_real_search_reply(self):
         client = ldap.Client()
-        fname = os.path.join(self.basedir(),
-            'lib/activedirectory/protocol/test', 'searchresult.bin')
-        fin = file(fname)
-        buf = fin.read()
-        fin.close()
+        buf = self.read_file('lib/activedirectory/protocol/test/searchresult.bin')
         reply = client.parse_message_header(buf)
         assert reply == (4, 4)
         reply = client.parse_search_result(buf)
@@ -40,9 +34,8 @@ class TestLDAP(BaseTest):
         msgid, dn, attrs = reply[0]
         assert msgid == 4
         assert dn == ''
-        fname = os.path.join(self.basedir(),
-            'lib/activedirectory/protocol/test', 'netlogon.bin')
-        fin = file(fname)
-        netlogon = fin.read()
-        fin.close()
+
+        netlogon = self.read_file('lib/activedirectory/protocol/test/netlogon.bin')
+        print(repr(attrs))
+        print(repr({ 'netlogon': [netlogon] }))
         assert attrs == { 'netlogon': [netlogon] }

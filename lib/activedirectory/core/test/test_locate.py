@@ -6,12 +6,15 @@
 # Python-AD is copyright (c) 2007 by the Python-AD authors. See the file
 # "AUTHORS" for a complete overview.
 
+from __future__ import absolute_import
+from __future__ import print_function
 import math
 import signal
 
 from activedirectory.test.base import BaseTest
 from activedirectory.core.locate import Locator
 from threading import Timer
+from six.moves import range
 
 
 class SRV(object):
@@ -73,7 +76,7 @@ class TestLocator(BaseTest):
         for i in range(n):
             res = loc._order_dns_srv(srv)
             count[res[0].weight] += 1
-        print count
+        print(count)
 
         def stddev(n, p):
             # standard deviation of binomial distribution
