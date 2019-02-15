@@ -6,6 +6,7 @@
 # Python-AD is copyright (c) 2007 by the Python-AD authors. See the file
 # "AUTHORS" for a complete overview.
 
+from __future__ import absolute_import
 import time
 import errno
 import socket
@@ -14,6 +15,7 @@ import random
 
 from ..util import misc
 from . import asn1, ldap
+from six.moves import range
 
 
 SERVER_PDC = 0x1
@@ -80,14 +82,14 @@ class Decoder(object):
                 byte = self._read_byte()
                 ptr = ((tag & ~0xc0) << 8) + ord(byte)
                 if ptr in _pointer:
-                    raise Error, 'Cyclic pointer'
+                    raise Error('Cyclic pointer')
                 _pointer.append(ptr)
                 saved, self.m_offset = self.m_offset, ptr
                 result.append(self._decode_rfc1035(_pointer))
                 self.m_offset = saved
                 break
             elif tag & 0xc0:
-                raise Error, 'Illegal tag'
+                raise Error('Illegal tag')
             else:
                 s = self._read_bytes(tag)
                 result.append(s)
@@ -105,10 +107,10 @@ class Decoder(object):
     def _decode_uint32(self):
         """Decode a 32-bit unsigned little endian integer from the current
         offset."""
-        value = 0L
+        value = 0
         for i in range(4):
             byte = self._read_byte()
-            value |= (long(ord(byte)) << i*8)
+            value |= (int(ord(byte)) << i*8)
         value = self._try_convert_int(value)
         return value
 
@@ -119,7 +121,7 @@ class Decoder(object):
     def _set_offset(self, offset):
         """Set the current decoding offset."""
         if offset < 0:
-            raise Error, 'Offset must be positive.'
+            raise Error('Offset must be positive.')
         self.m_offset = offset
 
     def _buffer(self):
@@ -129,7 +131,7 @@ class Decoder(object):
     def _set_buffer(self, buffer):
         """Set the current buffer."""
         if not isinstance(buffer, str):
-            raise Error, 'Buffer must be plain string.'
+            raise Error('Buffer must be plain string.')
         self.m_buffer = buffer
 
     def _read_byte(self, offset=None):
@@ -140,7 +142,7 @@ class Decoder(object):
         else:
             update_offset = False
         if offset >= len(self.m_buffer):
-            raise Error, 'Premature end of input.'
+            raise Error('Premature end of input.')
         byte = self.m_buffer[offset]
         if update_offset:
             self.m_offset += 1
@@ -156,7 +158,7 @@ class Decoder(object):
             update_offset = False
         bytes = self.m_buffer[offset:offset+count]
         if len(bytes) != count:
-            raise Error, 'Premature end of input.'
+            raise Error('Premature end of input.')
         if update_offset:
             self.m_offset += count
         return bytes
@@ -245,12 +247,12 @@ class Client(object):
             fds = [ self.m_socket.fileno() ]
             try:
                 result = select.select(fds, [], [], timeleft)
-            except select.error, err:
+            except select.error as err:
                 error = err.args[0]
                 if error == errno.EINTR:
                     continue  # interrupted by signal
                 else:
-                    raise Error, str(err)  # unrecoverable
+                    raise Error(str(err))  # unrecoverable
             if not result[0]:
                 continue  # timeout
             assert fds == result[0]
@@ -260,14 +262,14 @@ class Client(object):
                 try:
                     data, addr = self.m_socket.recvfrom(self._bufsize,  
                                                         socket.MSG_DONTWAIT)
-                except socket.error, err:
+                except socket.error as err:
                     error = err.args[0]
                     if error == errno.EINTR:
                         continue  # signal interrupt
                     elif error == errno.EAGAIN:
                         break  # no data available now
                     else:
-                        raise Error, str(err)  # unrecoverable
+                        raise Error(str(err))  # unrecoverable
                 try:
                     hostname, port, domain, msgid = self.m_queries[addr]
                 except KeyError:
@@ -320,7 +322,7 @@ class Client(object):
             return
         msgid, dn, attrs = messages[0]
         if not attrs.get('netlogon'):
-            raise Error, 'No netlogon attribute received.'
+            raise Error('No netlogon attribute received.')
         data = attrs['netlogon'][0]
         decoder = Decoder()
         decoder.start(data)

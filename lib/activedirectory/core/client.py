@@ -6,6 +6,7 @@
 # Python-AD is copyright (c) 2007 by the Python-AD authors. See the file
 # "AUTHORS" for a complete overview.
 
+from __future__ import absolute_import
 import re
 import dns
 import dns.resolver
@@ -61,7 +62,7 @@ class Client(object):
             creds = instance(Creds)
             if creds is None or not creds.principal():
                 m = 'No current credentials or credentials not activated.'
-                raise ADError, m
+                raise ADError(m)
         return creds
 
     def _fixup_scheme(self, scheme):
@@ -70,9 +71,9 @@ class Client(object):
             scheme = 'ldap'
         elif isinstance(scheme, str):
             if scheme not in ('ldap', 'gc'):
-                raise ValueError, 'Illegal scheme: %s' % scheme
+                raise ValueError('Illegal scheme: %s' % scheme)
         else:
-            raise TypeError, 'Illegal scheme type: %s' % type(scheme)
+            raise TypeError('Illegal scheme type: %s' % type(scheme))
         return scheme
 
     def _create_ldap_uri(self, servers, scheme=None):
@@ -132,7 +133,7 @@ class Client(object):
                      'configurationNamingContext')
             result = conn.search_s('', ldap.SCOPE_BASE, attrlist=attrs)
             if not result:
-                raise ADError, 'Could not search rootDSE of domain.'
+                raise ADError('Could not search rootDSE of domain.')
         finally:
             conn.unbind_s()
         dn, attrs = result[0]
@@ -186,7 +187,7 @@ class Client(object):
             attrs = ('nCName',)
             result = conn.search_s(base, ldap.SCOPE_ONELEVEL, filter, attrs)
             if not result:
-                raise ADError, 'Could not search rootDSE of forest root.'
+                raise ADError('Could not search rootDSE of forest root.')
         finally:
             conn.unbind_s()
         naming_contexts = []
@@ -248,7 +249,7 @@ class Client(object):
                     uri = self._create_ldap_uri(servers, scheme)
                 else:
                     if not locator.check_domain_controller(server, domain, role):
-                        raise ADError, 'Unsuitable server provided.'
+                        raise ADError('Unsuitable server provided.')
                     uri = self._create_ldap_uri([server], scheme)
                 creds = self._credentials()
                 creds._resolve_servers_for_domain(domain)
@@ -266,7 +267,7 @@ class Client(object):
     def _remove_empty_search_entries(self, result):
         """Remove empty search entries from a search result."""
         # What I have seen so far these entries are always LDAP referrals
-        return filter(lambda x: x[0] is not None, result)
+        return [x for x in result if x[0] is not None]
 
     re_range = re.compile('([^;]+);[Rr]ange=([0-9]+)(?:-([0-9]+|\\*))?')
 
@@ -284,7 +285,7 @@ class Client(object):
                 hi = int(hi)
             except ValueError:
                 m = 'Error while retrieving multi-valued attributes.'
-                raise ADError, m
+                raise ADError(m)
             rqattrs = ('%s;range=%s-*' % (type, hi+1),)
             filter = '(distinguishedName=%s)' % dn
             result = conn.search_s(base, ldap.SCOPE_SUBTREE, filter, rqattrs)
@@ -302,7 +303,7 @@ class Client(object):
                     break
             else:
                 m = 'Error while retrieving multi-valued attributes.'
-                raise ADError, m
+                raise ADError(m)
             values += attrs2[key2]
             hi = hi2
         attrs[type] = values
@@ -321,7 +322,7 @@ class Client(object):
         if filter is None:
             filter = '(objectClass=*)'
         elif not isinstance(filter, str):
-            raise TypeError, 'Illegal filter type: %s' % type(filter)
+            raise TypeError('Illegal filter type: %s' % type(filter))
         return filter
 
     def _fixup_base(self, base):
@@ -329,7 +330,7 @@ class Client(object):
         if base is None:
             base = self.dn_from_domain_name(self.domain())
         elif not isinstance(base, str):
-            raise TypeError, 'Illegal search base type: %s' % type(base)
+            raise TypeError('Illegal search base type: %s' % type(base))
         return base
 
     def _fixup_scope(self, scope):
@@ -345,9 +346,9 @@ class Client(object):
         elif isinstance(scope, int):
             if scope not in (ldap.SCOPE_BASE, ldap.SCOPE_ONELEVEL,
                              ldap.SCOPE_SUBTREE):
-                raise ValueError, 'Illegal scope: %s' % scope
+                raise ValueError('Illegal scope: %s' % scope)
         else:
-            raise TypeError, 'Illegal scope type: %s' % type(scope)
+            raise TypeError('Illegal scope type: %s' % type(scope))
         return scope
 
     def _fixup_attrs(self, attrs):
@@ -357,9 +358,9 @@ class Client(object):
         elif isinstance(attrs, list) or isinstance(attrs, tuple):
             for item in attrs:
                 if not isinstance(item, str):
-                    raise TypeError, 'Expecting sequence of strings.'
+                    raise TypeError('Expecting sequence of strings.')
         else:
-            raise TypeError, 'Expecting sequence of strings.'
+            raise TypeError('Expecting sequence of strings.')
         return attrs
 
     def _search_with_paged_results(self, conn, filter, base, scope, attrs):
@@ -375,7 +376,7 @@ class Client(object):
                        if c.controlType == compat.LDAP_CONTROL_PAGED_RESULTS ]
             if not rctrls:
                 m = 'Server does not honour paged results.'
-                raise ADError, m
+                raise ADError(m)
 
             size = rctrls[0].size
             cookie = rctrls[0].cookie
@@ -404,10 +405,10 @@ class Client(object):
         if base == '':
             if server is None:
                 m = 'A server must be specified when querying rootDSE'
-                raise ADError, m
+                raise ADError(m)
             if scope != ldap.SCOPE_BASE:
                 m = 'Search scope must be base when querying rootDSE'
-                raise ADError, m
+                raise ADError(m)
         conn = self._ldap_connection(base, server, scheme)
         if base == '':
             # search rootDSE does not honour paged results
@@ -422,19 +423,19 @@ class Client(object):
     def _fixup_add_list(self, attrs):
         """Check the `attrs' arguments to add()."""
         if not isinstance(attrs, list) and not isinstance(attrs, tuple):
-            raise TypeError, 'Expecting list of 2-tuples %s.'
+            raise TypeError('Expecting list of 2-tuples %s.')
         for item in attrs:
             if not isinstance(item, tuple) and not isinstance(item, list) \
                     or not len(item) == 2:
-                raise TypeError, 'Expecting list of 2-tuples.'
+                raise TypeError('Expecting list of 2-tuples.')
         for type,values in attrs:
             if not isinstance(type, str):
-                raise TypeError, 'List items must be 2-tuple of (str, [str]).'
+                raise TypeError('List items must be 2-tuple of (str, [str]).')
             if not isinstance(values, list) and not isinstance(values, tuple):
-                raise TypeError, 'List items must be 2-tuple of (str, [str]).'
+                raise TypeError('List items must be 2-tuple of (str, [str]).')
             for val in values:
                 if not isinstance(val, str):
-                    raise TypeError, 'List items must be 2-tuple of (str, [str]).'
+                    raise TypeError('List items must be 2-tuple of (str, [str]).')
         return attrs
 
     def add(self, dn, attrs, server=None):
@@ -459,27 +460,27 @@ class Client(object):
         elif op == 'delete':
             op = ldap.MOD_DELETE
         elif op not in (ldap.MOD_ADD, ldap.MOD_REPLACE, ldap.MOD_DELETE):
-            raise ValueError, 'Illegal modify operation: %s' % op
+            raise ValueError('Illegal modify operation: %s' % op)
         return op
 
     def _fixup_modify_list(self, mods):
         """Check the `mods' argument to modify()."""
         if not isinstance(mods, list) and not isinstance(mods, tuple):
-            raise TypeError, 'Expecting list of 3-tuples.'
+            raise TypeError('Expecting list of 3-tuples.')
         for item in mods:
             if not isinstance(item, tuple) and not isinstance(item, list) \
                     or not len(item) == 3:
-                raise TypeError, 'Expecting list of 3-tuples.'
+                raise TypeError('Expecting list of 3-tuples.')
         result = []
         for op,type,values in mods:
             op = self._fixup_modify_operation(op)
             if not isinstance(type, str):
-                raise TypeError, 'List items must be 3-tuple of (str, str, [str]).'
+                raise TypeError('List items must be 3-tuple of (str, str, [str]).')
             if not isinstance(values, list) and not isinstance(values, tuple):
-                raise TypeError, 'List items must be 3-tuple of (str, str, [str]).'
+                raise TypeError('List items must be 3-tuple of (str, str, [str]).')
             for val in values:
                 if not isinstance(val, str):
-                    raise TypeError, 'List item must be 3-tuple of (str, str, [str]).'
+                    raise TypeError('List item must be 3-tuple of (str, str, [str]).')
             result.append((op,type,values))
         return result
 
@@ -531,8 +532,8 @@ class Client(object):
             creds._set_servers_for_domain(domain, [server])
         try:
             krb5.set_password(principal, password)
-        except krb5.Error, err:
-            raise ADError, str(err)
+        except krb5.Error as err:
+            raise ADError(str(err))
         if server is not None:
             creds._resolve_servers_for_domain(domain, force=True)
 
@@ -549,7 +550,7 @@ class Client(object):
             creds._set_servers_for_domain(domain, [server])
         try:
             krb5.change_password(principal, oldpass, newpass)
-        except krb5.Error, err:
-            raise ADError, str(err)
+        except krb5.Error as err:
+            raise ADError(str(err))
         if server is not None:
             creds._resolve_servers_for_domain(domain, force=True)

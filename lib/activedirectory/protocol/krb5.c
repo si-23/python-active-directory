@@ -277,7 +277,12 @@ k5_cc_default(PyObject *self, PyObject *args)
 	return NULL;
     }
 
+    #if PY_MAJOR_VERSION >= 3
+    ret = PyUnicode_FromString(name);
+    #else
     ret = PyString_FromString(name);
+    #endif
+
     if (ret == NULL)
 	return ret;
 
@@ -348,7 +353,12 @@ k5_cc_get_principal(PyObject *self, PyObject *args)
     code = krb5_unparse_name(ctx, principal, &name);
     RETURN_ON_ERROR("krb5_unparse_name()", code);
 
+    #if PY_MAJOR_VERSION >= 3
+    ret = PyUnicode_FromString(name);
+    #else
     ret = PyString_FromString(name);
+    #endif
+
     if (ret == NULL)
 	return ret;
 
@@ -386,6 +396,17 @@ k5_c_valid_enctype(PyObject *self, PyObject *args)
     return ret;
 }
 
+struct module_state {
+    PyObject *error;
+};
+
+#if PY_MAJOR_VERSION >= 3
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+#endif
+
 
 static PyMethodDef k5_methods[] = 
 {
@@ -409,8 +430,42 @@ static PyMethodDef k5_methods[] =
 };
 
 
+#if PY_MAJOR_VERSION >= 3
+
+static int k5_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int k5_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "krb5",
+        NULL,
+        sizeof(struct module_state),
+        k5_methods,
+        NULL,
+        k5_traverse,
+        k5_clear,
+        NULL
+};
+
+#define INITERROR return NULL
+
+PyMODINIT_FUNC
+PyInit_krb5(void)
+
+#else
+#define INITERROR return
+
 void
 initkrb5(void)
+#endif
 {
     PyObject *module, *dict;
 
@@ -418,8 +473,24 @@ initkrb5(void)
     initialize_krb5_error_table();
 #endif
 
+#if PY_MAJOR_VERSION >= 3
+    module = PyModule_Create(&moduledef);
+#else
     module = Py_InitModule("krb5", k5_methods);
+#endif
+
+    if (module == NULL)
+        INITERROR;
+
     dict = PyModule_GetDict(module);
-    k5_error = PyErr_NewException("freeadi.protocol.krb5.Error", NULL, NULL);
-    PyDict_SetItemString(dict, "Error", k5_error);
+
+    struct module_state *st = GETSTATE(module);
+    st->error = PyErr_NewException("freeadi.protocol.krb5.Error", NULL, NULL);
+
+    PyDict_SetItemString(dict, "Error", st->error);
+
+#if PY_MAJOR_VERSION >= 3
+    return module;
+#endif
+
 }

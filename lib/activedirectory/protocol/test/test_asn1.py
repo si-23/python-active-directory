@@ -6,6 +6,7 @@
 # Python-AD is copyright (c) 2007-2008 by the Python-AD authors. See the
 # file "AUTHORS" for a complete overview.
 
+from __future__ import absolute_import
 from activedirectory.protocol import asn1
 from nose.tools import assert_raises
 
@@ -30,7 +31,7 @@ class TestEncoder(object):
     def test_long_integer(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.write(0x0102030405060708090a0b0c0d0e0fL)
+        enc.write(0x0102030405060708090a0b0c0d0e0f)
         res = enc.output()
         assert res == '\x02\x0f\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f'
 
@@ -44,7 +45,7 @@ class TestEncoder(object):
     def test_long_negative_integer(self):
         enc = asn1.Encoder()
         enc.start()
-        enc.write(-0x0102030405060708090a0b0c0d0e0fL)
+        enc.write(-0x0102030405060708090a0b0c0d0e0f)
         res = enc.output()
         assert res == '\x02\x0f\xfe\xfd\xfc\xfb\xfa\xf9\xf8\xf7\xf6\xf5\xf4\xf3\xf2\xf1\xf1'
 
@@ -266,7 +267,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag, val = dec.read()
-        assert val == 0x0102030405060708090a0b0c0d0e0fL
+        assert val == 0x0102030405060708090a0b0c0d0e0f
 
     def test_negative_integer(self):
         buf = '\x02\x01\xff'
@@ -280,7 +281,7 @@ class TestDecoder(object):
         dec = asn1.Decoder()
         dec.start(buf)
         tag, val = dec.read()
-        assert val == -0x0102030405060708090a0b0c0d0e0fL
+        assert val == -0x0102030405060708090a0b0c0d0e0f
 
     def test_twos_complement_boundaries(self):
         buf = '\x02\x01\x7f'

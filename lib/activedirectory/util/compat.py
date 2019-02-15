@@ -6,6 +6,7 @@
 # Python-AD is copyright (c) 2007-2009 by the Python-AD authors. See the
 # file "AUTHORS" for a complete overview.
 
+from __future__ import absolute_import
 import ldap
 import ldap.dn
 

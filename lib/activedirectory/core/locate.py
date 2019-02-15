@@ -6,6 +6,7 @@
 # Python-AD is copyright (c) 2007 by the Python-AD authors. See the file
 # "AUTHORS" for a complete overview.
 
+from __future__ import absolute_import
 import time
 import random
 import logging
@@ -19,6 +20,7 @@ from ..protocol import netlogon
 from ..protocol.netlogon import Client as NetlogonClient
 from .exception import Error as ADError
 from ..util import compat
+from six.moves import range
 
 
 LDAP_PORT = 389
@@ -67,7 +69,7 @@ class Locator(object):
         servers = self.locate_many(domain, role, maxservers=1)
         if not servers:
             m = 'Could not locate domain controller'
-            raise ADError, m
+            raise ADError(m)
         return servers[0]
 
     def locate_many(self, domain, role=None, maxservers=None):
@@ -84,7 +86,7 @@ class Locator(object):
         if maxservers is None:
             maxservers = self._maxservers
         if role not in ('dc', 'gc', 'pdc'):
-            raise ValueError, 'Role should be one of "dc", "gc" or "pdc".'
+            raise ValueError('Role should be one of "dc", "gc" or "pdc".')
         if role == 'pdc':
             maxservers = 1
         domain = domain.upper()
@@ -148,7 +150,7 @@ class Locator(object):
         self.m_logger.debug('DNS query %s type %s' % (query, type))
         try:
             answer = dns.resolver.query(query, type)
-        except dns.exception.DNSException, err:
+        except dns.exception.DNSException as err:
             answer = []
             self.m_logger.error('DNS query error: %s' % (str(err) or err.__doc__))
         else:
@@ -189,7 +191,7 @@ class Locator(object):
     def _order_dns_srv(self, answer):
         """Order the results of a DNS SRV query."""
         answer = list(answer)
-        answer.sort(lambda x,y: x.priority - y.priority)
+        answer.sort(key=lambda x: x.priority)
         result = []
         for i in range(len(answer)):
             if i == 0:
