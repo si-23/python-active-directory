@@ -41,7 +41,7 @@ setup(
         'activedirectory.util'
     ],
     tests_require=['nose', 'pexpect'],
-    install_requires=['python-ldap>=3.0', 'dnspython', 'ply', 'six'],
+    install_requires=['python-ldap>=3.0', 'dnspython', 'ply==3.8', 'six'],
     ext_modules=[Extension(
         'activedirectory.protocol.krb5',
         ['lib/activedirectory/protocol/krb5.c'],
