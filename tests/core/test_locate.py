@@ -11,7 +11,6 @@ from __future__ import print_function
 import math
 import signal
 
-from activedirectory.test.base import BaseTest
 from activedirectory.core.locate import Locator
 from threading import Timer
 from six.moves import range
@@ -27,12 +26,12 @@ class SRV(object):
         self.port = port
 
 
-class TestLocator(BaseTest):
+class TestLocator(object):
     """Test suite for Locator."""
 
-    def test_simple(self):
-        self.require(ad_user=True)
-        domain = self.domain()
+    def test_simple(self, conf):
+        conf.require(ad_user=True)
+        domain = conf.domain()
         loc = Locator()
         result = loc.locate_many(domain)
         assert len(result) > 0
@@ -41,17 +40,17 @@ class TestLocator(BaseTest):
         result = loc.locate_many(domain, role='pdc')
         assert len(result) == 1
 
-    def test_network_failure(self):
-        self.require(ad_user=True, local_admin=True, firewall=True)
-        domain = self.domain()
+    def test_network_failure(self, conf):
+        conf.require(ad_user=True, local_admin=True, firewall=True)
+        domain = conf.domain()
         loc = Locator()
         # Block outgoing DNS and CLDAP traffic and enable it after 3 seconds.
         # Locator should be able to handle this.
-        self.remove_network_blocks()
-        self.block_outgoing_traffic('tcp', 53)
-        self.block_outgoing_traffic('udp', 53)
-        self.block_outgoing_traffic('udp', 389)
-        t = Timer(3, self.remove_network_blocks); t.start()
+        conf.remove_network_blocks()
+        conf.block_outgoing_traffic('tcp', 53)
+        conf.block_outgoing_traffic('udp', 53)
+        conf.block_outgoing_traffic('udp', 389)
+        t = Timer(3, conf.remove_network_blocks); t.start()
         result = loc.locate_many(domain)
         assert len(result) > 0
 
@@ -88,9 +87,9 @@ class TestLocator(BaseTest):
             # asserting an error here.
             assert abs(count[x] - n*p) < 6 * stddev(n, p)
 
-    def test_detect_site(self):
-        self.require(ad_user=True)
+    def test_detect_site(self, conf):
+        conf.require(ad_user=True)
         loc = Locator()
-        domain = self.domain()
+        domain = conf.domain()
         site = loc._detect_site(domain)
         assert site is not None

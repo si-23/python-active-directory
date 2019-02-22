@@ -2,6 +2,7 @@ dist/
 /build
 /doc/html
 /ldapfilter_tab.py
+.eggs/
 *.egg-info
 /lib/*.egg-info
 /lib/*.egg
@@ -17,3 +18,4 @@ pip-log.txt
 .python-version
 .tox
 venv/
+test.conf.atl

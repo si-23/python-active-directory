@@ -8,7 +8,8 @@
 
 from __future__ import absolute_import
 from activedirectory.protocol import asn1
-from nose.tools import assert_raises
+
+from ..base import assert_raises
 
 
 class TestEncoder(object):
