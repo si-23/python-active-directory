@@ -15,6 +15,7 @@ import random
 
 from ..util import misc
 from . import asn1, ldap
+import six
 from six.moves import range
 
 
@@ -306,7 +307,7 @@ class Client(object):
         attrs = ('NetLogon',)
         query = client.create_search_request('', filter, attrs=attrs,
                                              scope=ldap.SCOPE_BASE, msgid=msgid)
-        return query
+        return six.ensure_binary(query)
 
     def _parse_message_header(self, reply):
         """Parse an LDAP header and return the messageid and opcode."""

@@ -15,124 +15,127 @@ from threading import Timer
 import six
 from six.moves import range
 
-from nose.tools import assert_raises
-from activedirectory.test.base import BaseTest
+import pytest
 from activedirectory.protocol import netlogon
 
+from ..base import assert_raises
 
-class TestDecoder(BaseTest):
+
+def decode_uint32(buffer, offset):
+    d = netlogon.Decoder()
+    d.start(buffer)
+    d._set_offset(offset)
+    return d._decode_uint32(), d._offset()
+
+
+def decode_rfc1035(buffer, offset):
+    d = netlogon.Decoder()
+    d.start(buffer)
+    d._set_offset(offset)
+    return d._decode_rfc1035(), d._offset()
+
+
+class TestDecoder(object):
     """Test suite for netlogon.Decoder."""
-
-    def decode_uint32(self, buffer, offset):
-        d = netlogon.Decoder()
-        d.start(buffer)
-        d._set_offset(offset)
-        return d._decode_uint32(), d._offset()
 
     def test_uint32_simple(self):
         s = '\x01\x00\x00\x00'
-        assert self.decode_uint32(s, 0) == (1, 4)
+        assert decode_uint32(s, 0) == (1, 4)
 
     def test_uint32_byte_order(self):
         s = '\x00\x01\x00\x00'
-        assert self.decode_uint32(s, 0) == (0x100, 4)
+        assert decode_uint32(s, 0) == (0x100, 4)
         s = '\x00\x00\x01\x00'
-        assert self.decode_uint32(s, 0) == (0x10000, 4)
+        assert decode_uint32(s, 0) == (0x10000, 4)
         s = '\x00\x00\x00\x01'
-        assert self.decode_uint32(s, 0) == (0x1000000, 4)
+        assert decode_uint32(s, 0) == (0x1000000, 4)
 
     def test_uint32_long(self):
         s = '\x00\x00\x00\xff'
-        assert self.decode_uint32(s, 0) == (0xff000000, 4)
+        assert decode_uint32(s, 0) == (0xff000000, 4)
         s = '\xff\xff\xff\xff'
-        assert self.decode_uint32(s, 0) == (0xffffffff, 4)
+        assert decode_uint32(s, 0) == (0xffffffff, 4)
 
     def test_error_uint32_null_input(self):
         s = ''
-        assert_raises(netlogon.Error, self.decode_uint32, s, 0)
+        assert_raises(netlogon.Error, decode_uint32, s, 0)
 
     def test_error_uint32_short_input(self):
         s = '\x00'
-        assert_raises(netlogon.Error, self.decode_uint32, s, 0)
+        assert_raises(netlogon.Error, decode_uint32, s, 0)
         s = '\x00\x00'
-        assert_raises(netlogon.Error, self.decode_uint32, s, 0)
+        assert_raises(netlogon.Error, decode_uint32, s, 0)
         s = '\x00\x00\x00'
-        assert_raises(netlogon.Error, self.decode_uint32, s, 0)
-
-    def decode_rfc1035(self, buffer, offset):
-        d = netlogon.Decoder()
-        d.start(buffer)
-        d._set_offset(offset)
-        return d._decode_rfc1035(), d._offset()
+        assert_raises(netlogon.Error, decode_uint32, s, 0)
 
     def test_rfc1035_simple(self):
         s = '\x03foo\x00'
-        assert self.decode_rfc1035(s, 0) == ('foo', 5)
+        assert decode_rfc1035(s, 0) == ('foo', 5)
 
     def test_rfc1035_multi_component(self):
         s = '\x03foo\x03bar\x00'
-        assert self.decode_rfc1035(s, 0) == ('foo.bar', 9)
+        assert decode_rfc1035(s, 0) == ('foo.bar', 9)
 
     def test_rfc1035_pointer(self):
         s = '\x03foo\x00\xc0\x00'
-        assert self.decode_rfc1035(s, 5) == ('foo', 7)
+        assert decode_rfc1035(s, 5) == ('foo', 7)
 
     def test_rfc1035_forward_pointer(self):
         s = '\xc0\x02\x03foo\x00'
-        assert self.decode_rfc1035(s, 0) == ('foo', 2)
+        assert decode_rfc1035(s, 0) == ('foo', 2)
 
     def test_rfc1035_pointer_component(self):
         s = '\x03foo\x00\x03bar\xc0\x00'
-        assert self.decode_rfc1035(s, 5) == ('bar.foo', 11)
+        assert decode_rfc1035(s, 5) == ('bar.foo', 11)
 
     def test_rfc1035_pointer_multi_component(self):
         s = '\x03foo\x03bar\x00\x03baz\xc0\x00'
-        assert self.decode_rfc1035(s, 9) == ('baz.foo.bar', 15)
+        assert decode_rfc1035(s, 9) == ('baz.foo.bar', 15)
 
     def test_rfc1035_pointer_recursive(self):
         s = '\x03foo\x00\x03bar\xc0\x00\x03baz\xc0\x05'
-        assert self.decode_rfc1035(s, 11) == ('baz.bar.foo', 17)
+        assert decode_rfc1035(s, 11) == ('baz.bar.foo', 17)
 
     def test_rfc1035_multi_string(self):
         s = '\x03foo\x00\x03bar\x00'
-        assert self.decode_rfc1035(s, 0) == ('foo', 5)
-        assert self.decode_rfc1035(s, 5) == ('bar', 10)
+        assert decode_rfc1035(s, 0) == ('foo', 5)
+        assert decode_rfc1035(s, 5) == ('bar', 10)
 
     def test_rfc1035_null(self):
         s = '\x00'
-        assert self.decode_rfc1035(s, 0) == ('', 1)
+        assert decode_rfc1035(s, 0) == ('', 1)
 
     def test_error_rfc1035_null_input(self):
         s = ''
-        assert_raises(netlogon.Error, self.decode_rfc1035, s, 0)
+        assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_missing_tag(self):
         s = '\x03foo'
-        assert_raises(netlogon.Error, self.decode_rfc1035, s, 0)
+        assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_truncated_input(self):
         s = '\x04foo'
-        assert_raises(netlogon.Error, self.decode_rfc1035, s, 0)
+        assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_pointer_overflow(self):
         s = '\xc0\x03'
-        assert_raises(netlogon.Error, self.decode_rfc1035, s, 0)
+        assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_cyclic_pointer(self):
         s = '\xc0\x00'
-        assert_raises(netlogon.Error, self.decode_rfc1035, s, 0)
+        assert_raises(netlogon.Error, decode_rfc1035, s, 0)
         s = '\x03foo\xc0\x06\x03bar\xc0\x0c\x03baz\xc0\x00'
-        assert_raises(netlogon.Error, self.decode_rfc1035, s, 0)
+        assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_illegal_tags(self):
         s = '\x80' + 0x80 * 'a' + '\x00'
-        assert_raises(netlogon.Error, self.decode_rfc1035, s, 0)
+        assert_raises(netlogon.Error, decode_rfc1035, s, 0)
         s = '\x40' + 0x40 * 'a' + '\x00'
-        assert_raises(netlogon.Error, self.decode_rfc1035, s, 0)
+        assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_half_pointer(self):
         s = '\xc0'
-        assert_raises(netlogon.Error, self.decode_rfc1035, s, 0)
+        assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_io_byte(self):
         d = netlogon.Decoder()
@@ -188,8 +191,8 @@ class TestDecoder(BaseTest):
         else:
             assert_raises(netlogon.Error, d.start, u'test')
 
-    def test_real_packet(self):
-        buf = self.read_file('lib/activedirectory/protocol/test/netlogon.bin')
+    def test_real_packet(self, conf):
+        buf = conf.read_file('protocol/netlogon.bin')
         dec = netlogon.Decoder()
         dec.start(buf)
         res = dec.parse()
@@ -205,12 +208,12 @@ class TestDecoder(BaseTest):
         assert_raises(netlogon.Error, dec.parse)
 
 
-class TestClient(BaseTest):
+class TestClient(object):
     """Test suite for netlogon.Client."""
 
-    def test_simple(self):
-        self.require(ad_user=True)
-        domain = self.domain()
+    def test_simple(self, conf):
+        conf.require(ad_user=True)
+        domain = conf.domain()
         client = netlogon.Client()
         answer = dns.resolver.query('_ldap._tcp.%s' % domain, 'SRV')
         addrs = [ (ans.target.to_text(), ans.port) for ans in answer ]
@@ -236,9 +239,9 @@ class TestClient(BaseTest):
             assert res.q_domain.lower() == domain.lower()
             assert res.q_timing >= 0.0
 
-    def test_network_failure(self):
-        self.require(ad_user=True, local_admin=True, firewall=True)
-        domain = self.domain()
+    def test_network_failure(self, conf):
+        conf.require(ad_user=True, local_admin=True, firewall=True)
+        domain = conf.domain()
         client = netlogon.Client()
         answer = dns.resolver.query('_ldap._tcp.%s' % domain, 'SRV')
         addrs = [ (ans.target.to_text(), ans.port) for ans in answer ]
@@ -246,8 +249,8 @@ class TestClient(BaseTest):
             client.query(addr, domain)
         # Block CLDAP traffic and enable it after 3 seconds. Because
         # NetlogonClient is retrying, it should be succesfull.
-        self.remove_network_blocks()
-        self.block_outgoing_traffic('udp', 389)
-        t = Timer(3, self.remove_network_blocks); t.start()
+        conf.remove_network_blocks()
+        conf.block_outgoing_traffic('udp', 389)
+        t = Timer(3, conf.remove_network_blocks); t.start()
         result = client.call()
         assert len(result) == len(addrs)

@@ -7,8 +7,9 @@
 # "AUTHORS" for a complete overview.
 
 from __future__ import absolute_import
-from nose.tools import assert_raises
 from activedirectory.protocol import ldapfilter
+
+from ..base import assert_raises
 
 
 class TestLDAPFilterParser(object):

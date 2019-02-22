@@ -10,20 +10,19 @@ from __future__ import absolute_import
 import os
 import pexpect
 
-from activedirectory.test.base import BaseTest
 from activedirectory.core.creds import Creds as ADCreds
 from activedirectory.core.object import instance, activate
 
 
-class TestCreds(BaseTest):
+class TestCreds(object):
     """Test suite for activedirectory.core.creds."""
 
-    def test_acquire_password(self):
-        self.require(ad_user=True)
-        domain = self.domain()
+    def test_acquire_password(self, conf):
+        conf.require(ad_user=True)
+        domain = conf.domain()
         creds = ADCreds(domain)
-        principal = self.ad_user_account()
-        password = self.ad_user_password()
+        principal = conf.ad_user_account()
+        password = conf.ad_user_password()
         creds.acquire(principal, password)
         principal = '%s@%s' % (principal, domain)
         assert creds.principal().lower() == principal.lower()
@@ -31,12 +30,12 @@ class TestCreds(BaseTest):
         pattern = '.*krbtgt/%s@%s' % (domain.upper(), domain.upper())
         assert child.expect([pattern]) == 0
 
-    def test_acquire_keytab(self):
-        self.require(ad_user=True)
-        domain = self.domain()
+    def test_acquire_keytab(self, conf):
+        conf.require(ad_user=True)
+        domain = conf.domain()
         creds = ADCreds(domain)
-        principal = self.ad_user_account()
-        password = self.ad_user_password()
+        principal = conf.ad_user_account()
+        password = conf.ad_user_password()
         creds.acquire(principal, password)
         os.environ['PATH'] = '/usr/kerberos/sbin:/usr/kerberos/bin:%s' % \
                              os.environ['PATH']
@@ -52,7 +51,7 @@ class TestCreds(BaseTest):
         child.expect('Password for.*:')
         child.sendline(password)
         child.expect('ktutil:')
-        keytab = self.tempfile(remove=True)
+        keytab = conf.tempfile(remove=True)
         child.sendline('wkt %s' % keytab)
         child.expect('ktutil:')
         child.sendline('quit')
@@ -63,24 +62,24 @@ class TestCreds(BaseTest):
         pattern = '.*krbtgt/%s@%s' % (domain.upper(), domain.upper())
         assert child.expect([pattern]) == 0
 
-    def test_load(self):
-        self.require(ad_user=True)
-        domain = self.domain().upper()
-        principal = '%s@%s' % (self.ad_user_account(), domain)
-        self.acquire_credentials(principal, self.ad_user_password())
+    def test_load(self, conf):
+        conf.require(ad_user=True)
+        domain = conf.domain().upper()
+        principal = '%s@%s' % (conf.ad_user_account(), domain)
+        conf.acquire_credentials(principal, conf.ad_user_password())
         creds = ADCreds(domain)
         creds.load()
         assert creds.principal().lower() == principal.lower()
-        ccache, princ, creds = self.list_credentials()
+        ccache, princ, creds = conf.list_credentials()
         assert princ.lower() == principal.lower()
         assert len(creds) > 0
         assert creds[0] == 'krbtgt/%s@%s' % (domain, domain)
 
-    def test_acquire_multi(self):
-        self.require(ad_user=True)
-        domain = self.domain()
-        principal = self.ad_user_account()
-        password = self.ad_user_password()
+    def test_acquire_multi(self, conf):
+        conf.require(ad_user=True)
+        domain = conf.domain()
+        principal = conf.ad_user_account()
+        password = conf.ad_user_password()
         creds1 = ADCreds(domain)
         creds1.acquire(principal, password)
         ccache1 = creds1._ccache_name()
@@ -102,11 +101,11 @@ class TestCreds(BaseTest):
         assert os.environ['KRB5CCNAME'] == ccache2
         assert os.environ['KRB5_CONFIG'] == config2
 
-    def test_release_multi(self):
-        self.require(ad_user=True)
-        domain = self.domain()
-        principal = self.ad_user_account()
-        password = self.ad_user_password()
+    def test_release_multi(self, conf):
+        conf.require(ad_user=True)
+        domain = conf.domain()
+        principal = conf.ad_user_account()
+        password = conf.ad_user_password()
         ccorig = os.environ.get('KRB5CCNAME')
         cforig = os.environ.get('KRB5_CONFIG')
         creds1 = ADCreds(domain)
@@ -124,11 +123,11 @@ class TestCreds(BaseTest):
         assert os.environ.get('KRB5CCNAME') == ccorig
         assert os.environ.get('KRB5_CONFIG') == cforig
 
-    def test_cleanup_files(self):
-        self.require(ad_user=True)
-        domain = self.domain()
-        principal = self.ad_user_account()
-        password = self.ad_user_password()
+    def test_cleanup_files(self, conf):
+        conf.require(ad_user=True)
+        domain = conf.domain()
+        principal = conf.ad_user_account()
+        password = conf.ad_user_password()
         creds = ADCreds(domain)
         creds.acquire(principal, password)
         ccache = creds._ccache_name()
@@ -139,11 +138,11 @@ class TestCreds(BaseTest):
         assert not os.access(ccache, os.R_OK)
         assert not os.access(config, os.R_OK)
 
-    def test_cleanup_environment(self):
-        self.require(ad_user=True)
-        domain = self.domain()
-        principal = self.ad_user_account()
-        password = self.ad_user_password()
+    def test_cleanup_environment(self, conf):
+        conf.require(ad_user=True)
+        domain = conf.domain()
+        principal = conf.ad_user_account()
+        password = conf.ad_user_password()
         ccorig = os.environ.get('KRB5CCNAME')
         cforig = os.environ.get('KRB5_CONFIG')
         creds = ADCreds(domain)
