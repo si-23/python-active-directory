@@ -485,7 +485,7 @@ initkrb5(void)
     dict = PyModule_GetDict(module);
 
     struct module_state *st = GETSTATE(module);
-    st->error = PyErr_NewException("freeadi.protocol.krb5.Error", NULL, NULL);
+    k5_error = st->error = PyErr_NewException("freeadi.protocol.krb5.Error", NULL, NULL);
 
     PyDict_SetItemString(dict, "Error", st->error);
 
