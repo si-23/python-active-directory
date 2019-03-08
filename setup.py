@@ -10,7 +10,7 @@ from setuptools import setup, Extension
 
 setup(
     name='python-active-directory',
-    version='1.0.0',
+    version='1.0.1',
     description='An Active Directory client library for Python',
     long_description=open('README.rst').read(),
     long_description_content_type='text/x-rst',
