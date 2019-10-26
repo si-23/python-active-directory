@@ -13,7 +13,7 @@
 #
 # Python-AD is copyright (c) 2007 by the Python-AD authors. See the file
 # "AUTHORS" for a complete overview.
-
+from __future__ import print_function
 import os
 import os.path
 import sys
@@ -49,8 +49,8 @@ abspath = os.path.abspath(sys.argv[0])
 topdir, fname = os.path.split(abspath)
 
 bindir = os.path.join(topdir, 'bin')
-print prepend_path('PATH', bindir)
+print(prepend_path('PATH', bindir))
 pythondir = os.path.join(topdir, 'lib')
-print prepend_path('PYTHONPATH', pythondir)
+print(prepend_path('PYTHONPATH', pythondir))
 testconf = os.path.join(topdir, 'test.conf')
-print setenv('FREEADI_TEST_CONFIG', testconf)
+print(setenv('FREEADI_TEST_CONFIG', testconf))

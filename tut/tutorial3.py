@@ -1,3 +1,4 @@
+from __future__ import print_function
 from activedirectory import Client, Creds, Locator, activate
 
 domain = 'freeadi.org'
@@ -15,4 +16,4 @@ client = Client(domain)
 users = client.search('(objectClass=user)', server=pdc)
 for dn,attrs in users:
     name = attrs['sAMAccountName'][0]
-    print '-> %s' % name
+    print('-> %s' % name)
