@@ -31,9 +31,9 @@ def test_decode_real_search_reply(conf):
     assert len(reply) == 1
     msgid, dn, attrs = reply[0]
     assert msgid == 4
-    assert dn == ''
+    assert dn == b''
 
     netlogon = conf.read_file('protocol/netlogon.bin')
     print(repr(attrs))
     print(repr({ 'netlogon': [netlogon] }))
-    assert attrs == { 'netlogon': [netlogon] }
+    assert attrs == { b'netlogon': [netlogon] }

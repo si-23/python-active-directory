@@ -137,9 +137,9 @@ class Client(object):
         finally:
             conn.unbind_s()
         dn, attrs = result[0]
-        self.m_forest = attrs['rootDomainNamingContext'][0]
-        self.m_schema = attrs['schemaNamingContext'][0]
-        self.m_configuration = attrs['configurationNamingContext'][0]
+        self.m_forest = attrs['rootDomainNamingContext'][0].decode('utf-8')
+        self.m_schema = attrs['schemaNamingContext'][0].decode('utf-8')
+        self.m_configuration = attrs['configurationNamingContext'][0].decode('utf-8')
 
     def domain(self):
         """Return the domain name of the current domain."""
@@ -193,7 +193,7 @@ class Client(object):
         naming_contexts = []
         for res in result:
             dn, attrs = res
-            nc = attrs['nCName'][0].lower()
+            nc = attrs['nCName'][0].decode('utf-8').lower()
             naming_contexts.append(nc)
         self.m_naming_contexts = naming_contexts
 

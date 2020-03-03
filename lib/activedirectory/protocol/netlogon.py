@@ -76,12 +76,12 @@ class Decoder(object):
         if _pointer == False:
             _pointer = []
         while True:
-            tag = ord(self._read_byte())
+            tag = self._read_byte()
             if tag == 0:
                 break
             elif tag & 0xc0 == 0xc0:
                 byte = self._read_byte()
-                ptr = ((tag & ~0xc0) << 8) + ord(byte)
+                ptr = ((tag & ~0xc0) << 8) + byte
                 if ptr in _pointer:
                     raise Error('Cyclic pointer')
                 _pointer.append(ptr)
@@ -94,7 +94,7 @@ class Decoder(object):
             else:
                 s = self._read_bytes(tag)
                 result.append(s)
-        result = '.'.join(result)
+        result = b'.'.join(result)
         return result
 
     def _try_convert_int(self, value):
@@ -111,7 +111,7 @@ class Decoder(object):
         value = 0
         for i in range(4):
             byte = self._read_byte()
-            value |= (int(ord(byte)) << i*8)
+            value |= (byte << i*8)
         value = self._try_convert_int(value)
         return value
 
@@ -131,8 +131,8 @@ class Decoder(object):
 
     def _set_buffer(self, buffer):
         """Set the current buffer."""
-        if not isinstance(buffer, str):
-            raise Error('Buffer must be plain string.')
+        if not isinstance(buffer, six.binary_type):
+            raise Error('Buffer must be bytes.')
         self.m_buffer = buffer
 
     def _read_byte(self, offset=None):
@@ -145,6 +145,8 @@ class Decoder(object):
         if offset >= len(self.m_buffer):
             raise Error('Premature end of input.')
         byte = self.m_buffer[offset]
+        if isinstance(byte, str):
+            byte = ord(byte)
         if update_offset:
             self.m_offset += 1
         return byte
@@ -305,9 +307,8 @@ class Client(object):
         filter = '(&(DnsDomain=%s)(Host=%s)(NtVer=\\06\\00\\00\\00))' % \
                  (domain, hostname)
         attrs = ('NetLogon',)
-        query = client.create_search_request('', filter, attrs=attrs,
+        return client.create_search_request('', filter, attrs=attrs,
                                              scope=ldap.SCOPE_BASE, msgid=msgid)
-        return six.ensure_binary(query)
 
     def _parse_message_header(self, reply):
         """Parse an LDAP header and return the messageid and opcode."""
@@ -322,9 +323,9 @@ class Client(object):
         if not messages:
             return
         msgid, dn, attrs = messages[0]
-        if not attrs.get('netlogon'):
+        if not attrs.get(b'netlogon'):
             raise Error('No netlogon attribute received.')
-        data = attrs['netlogon'][0]
+        data = attrs[b'netlogon'][0]
         decoder = Decoder()
         decoder.start(data)
         result = decoder.parse()

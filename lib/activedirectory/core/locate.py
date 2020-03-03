@@ -11,6 +11,7 @@ import time
 import random
 import logging
 
+import six
 import ldap
 import dns.resolver
 import dns.reversename
@@ -56,13 +57,14 @@ class Locator(object):
     _maxservers = 3
     _timeout = 300  # cache entries for 5 minutes
 
-    def __init__(self, site=None):
+    def __init__(self, site=None, resolver=None):
         """Constructor."""
         self.m_site = site
         self.m_site_detected = False
         self.m_logger = logging.getLogger('activedirectory.core.locate')
         self.m_cache = {}
         self.m_timeout = self._timeout
+        self.m_resolver = resolver or dns.resolver.get_default_resolver()
 
     def locate(self, domain, role=None):
         """Locate one domain controller."""
@@ -75,7 +77,7 @@ class Locator(object):
     def locate_many(self, domain, role=None, maxservers=None):
         """Locate a list of up to `maxservers' of domain controllers."""
         result = self.locate_many_ex(domain, role, maxservers)
-        result = [ r.hostname for r in result ]
+        result = [ six.ensure_text(r.hostname) for r in result ]
         return result
 
     def locate_many_ex(self, domain, role=None, maxservers=None):
@@ -149,7 +151,7 @@ class Locator(object):
         """Perform a DNS query."""
         self.m_logger.debug('DNS query %s type %s' % (query, type))
         try:
-            answer = dns.resolver.query(query, type)
+            answer = self.m_resolver.query(query, type)
         except dns.exception.DNSException as err:
             answer = []
             self.m_logger.error('DNS query error: %s' % (str(err) or err.__doc__))
@@ -186,7 +188,7 @@ class Locator(object):
         sites = [ (value, key) for key,value in sites.items() ]
         sites.sort()
         self.m_logger.debug('site detected as %s' % sites[-1][1])
-        return sites[0][1]
+        return six.ensure_text(sites[0][1])
 
     def _order_dns_srv(self, answer):
         """Order the results of a DNS SRV query."""
@@ -271,7 +273,7 @@ class Locator(object):
                 role == 'dc' and not (reply.flags & netlogon.SERVER_LDAP):
             self.m_logger.error('Role does not match')
             return False
-        if reply.q_domain.lower() != reply.domain.lower():
+        if reply.q_domain.lower() != six.ensure_text(reply.domain).lower():
             self.m_logger.error('Domain does not match')
             return False
         self.m_logger.debug('Controller is OK')
@@ -300,11 +302,11 @@ class Locator(object):
             assert hasattr(reply, 'checked')
             if not reply.checked:
                 continue
-            if self.m_site.lower() == reply.server_site.lower():
+            if self.m_site.lower() == six.ensure_text(reply.server_site).lower():
                 local.append(reply)
             else:
                 remote.append(reply)
-        local.sort(key=lambda a: a.index((a.q_hostname, a.q_port)))
+        local.sort(key=lambda a: addresses.index((a.q_hostname, a.q_port)))
         remote.sort(key=lambda a: a.q_timing)
         self.m_logger.debug('Local DCs: %s' % ', '.join(['%s:%s' %
                                 (x.q_hostname, x.q_port) for x in local]))

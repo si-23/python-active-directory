@@ -100,7 +100,7 @@ class Conf(object):
         with open(fname, 'rb') as fin:
             buf = fin.read()
 
-        return buf.decode('latin_1') if six.PY3 else buf
+        return buf
 
     def require(self, ad_user=False, local_admin=False, ad_admin=False,
                 firewall=False, expensive=False):

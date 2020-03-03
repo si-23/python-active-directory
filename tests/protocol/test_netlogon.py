@@ -39,121 +39,121 @@ class TestDecoder(object):
     """Test suite for netlogon.Decoder."""
 
     def test_uint32_simple(self):
-        s = '\x01\x00\x00\x00'
+        s = b'\x01\x00\x00\x00'
         assert decode_uint32(s, 0) == (1, 4)
 
     def test_uint32_byte_order(self):
-        s = '\x00\x01\x00\x00'
+        s = b'\x00\x01\x00\x00'
         assert decode_uint32(s, 0) == (0x100, 4)
-        s = '\x00\x00\x01\x00'
+        s = b'\x00\x00\x01\x00'
         assert decode_uint32(s, 0) == (0x10000, 4)
-        s = '\x00\x00\x00\x01'
+        s = b'\x00\x00\x00\x01'
         assert decode_uint32(s, 0) == (0x1000000, 4)
 
     def test_uint32_long(self):
-        s = '\x00\x00\x00\xff'
+        s = b'\x00\x00\x00\xff'
         assert decode_uint32(s, 0) == (0xff000000, 4)
-        s = '\xff\xff\xff\xff'
+        s = b'\xff\xff\xff\xff'
         assert decode_uint32(s, 0) == (0xffffffff, 4)
 
     def test_error_uint32_null_input(self):
-        s = ''
+        s = b''
         assert_raises(netlogon.Error, decode_uint32, s, 0)
 
     def test_error_uint32_short_input(self):
-        s = '\x00'
+        s = b'\x00'
         assert_raises(netlogon.Error, decode_uint32, s, 0)
-        s = '\x00\x00'
+        s = b'\x00\x00'
         assert_raises(netlogon.Error, decode_uint32, s, 0)
-        s = '\x00\x00\x00'
+        s = b'\x00\x00\x00'
         assert_raises(netlogon.Error, decode_uint32, s, 0)
 
     def test_rfc1035_simple(self):
-        s = '\x03foo\x00'
-        assert decode_rfc1035(s, 0) == ('foo', 5)
+        s = b'\x03foo\x00'
+        assert decode_rfc1035(s, 0) == (b'foo', 5)
 
     def test_rfc1035_multi_component(self):
-        s = '\x03foo\x03bar\x00'
-        assert decode_rfc1035(s, 0) == ('foo.bar', 9)
+        s = b'\x03foo\x03bar\x00'
+        assert decode_rfc1035(s, 0) == (b'foo.bar', 9)
 
     def test_rfc1035_pointer(self):
-        s = '\x03foo\x00\xc0\x00'
-        assert decode_rfc1035(s, 5) == ('foo', 7)
+        s = b'\x03foo\x00\xc0\x00'
+        assert decode_rfc1035(s, 5) == (b'foo', 7)
 
     def test_rfc1035_forward_pointer(self):
-        s = '\xc0\x02\x03foo\x00'
-        assert decode_rfc1035(s, 0) == ('foo', 2)
+        s = b'\xc0\x02\x03foo\x00'
+        assert decode_rfc1035(s, 0) == (b'foo', 2)
 
     def test_rfc1035_pointer_component(self):
-        s = '\x03foo\x00\x03bar\xc0\x00'
-        assert decode_rfc1035(s, 5) == ('bar.foo', 11)
+        s = b'\x03foo\x00\x03bar\xc0\x00'
+        assert decode_rfc1035(s, 5) == (b'bar.foo', 11)
 
     def test_rfc1035_pointer_multi_component(self):
-        s = '\x03foo\x03bar\x00\x03baz\xc0\x00'
-        assert decode_rfc1035(s, 9) == ('baz.foo.bar', 15)
+        s = b'\x03foo\x03bar\x00\x03baz\xc0\x00'
+        assert decode_rfc1035(s, 9) == (b'baz.foo.bar', 15)
 
     def test_rfc1035_pointer_recursive(self):
-        s = '\x03foo\x00\x03bar\xc0\x00\x03baz\xc0\x05'
-        assert decode_rfc1035(s, 11) == ('baz.bar.foo', 17)
+        s = b'\x03foo\x00\x03bar\xc0\x00\x03baz\xc0\x05'
+        assert decode_rfc1035(s, 11) == (b'baz.bar.foo', 17)
 
     def test_rfc1035_multi_string(self):
-        s = '\x03foo\x00\x03bar\x00'
-        assert decode_rfc1035(s, 0) == ('foo', 5)
-        assert decode_rfc1035(s, 5) == ('bar', 10)
+        s = b'\x03foo\x00\x03bar\x00'
+        assert decode_rfc1035(s, 0) == (b'foo', 5)
+        assert decode_rfc1035(s, 5) == (b'bar', 10)
 
     def test_rfc1035_null(self):
-        s = '\x00'
-        assert decode_rfc1035(s, 0) == ('', 1)
+        s = b'\x00'
+        assert decode_rfc1035(s, 0) == (b'', 1)
 
     def test_error_rfc1035_null_input(self):
-        s = ''
+        s = b''
         assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_missing_tag(self):
-        s = '\x03foo'
+        s = b'\x03foo'
         assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_truncated_input(self):
-        s = '\x04foo'
+        s = b'\x04foo'
         assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_pointer_overflow(self):
-        s = '\xc0\x03'
+        s = b'\xc0\x03'
         assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_cyclic_pointer(self):
-        s = '\xc0\x00'
+        s = b'\xc0\x00'
         assert_raises(netlogon.Error, decode_rfc1035, s, 0)
-        s = '\x03foo\xc0\x06\x03bar\xc0\x0c\x03baz\xc0\x00'
+        s = b'\x03foo\xc0\x06\x03bar\xc0\x0c\x03baz\xc0\x00'
         assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_illegal_tags(self):
-        s = '\x80' + 0x80 * 'a' + '\x00'
+        s = b'\x80' + 0x80 * b'a' + b'\x00'
         assert_raises(netlogon.Error, decode_rfc1035, s, 0)
-        s = '\x40' + 0x40 * 'a' + '\x00'
+        s = b'\x40' + 0x40 * b'a' + b'\x00'
         assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_error_rfc1035_half_pointer(self):
-        s = '\xc0'
+        s = b'\xc0'
         assert_raises(netlogon.Error, decode_rfc1035, s, 0)
 
     def test_io_byte(self):
         d = netlogon.Decoder()
-        s = 'foo'
+        s = b'foo'
         d.start(s)
-        assert d._read_byte() == 'f'
-        assert d._read_byte() == 'o'
-        assert d._read_byte() == 'o'
+        assert d._read_byte() == ord('f')
+        assert d._read_byte() == ord('o')
+        assert d._read_byte() == ord('o')
 
     def test_io_bytes(self):
         d = netlogon.Decoder()
-        s = 'foo'
+        s = b'foo'
         d.start(s)
-        assert d._read_bytes(3) == 'foo'
+        assert d._read_bytes(3) == b'foo'
 
     def test_error_io_byte(self):
         d = netlogon.Decoder()
-        s = 'foo'
+        s = b'foo'
         d.start(s)
         for i in range(3):
             d._read_byte()
@@ -161,13 +161,13 @@ class TestDecoder(object):
 
     def test_error_io_bytes(self):
         d = netlogon.Decoder()
-        s = 'foo'
+        s = b'foo'
         d.start(s)
         assert_raises(netlogon.Error, d._read_bytes, 4)
 
     def test_error_io_bounds(self):
         d = netlogon.Decoder()
-        s = 'foo'
+        s = b'foo'
         d.start(s)
         d._set_offset(4)
         assert_raises(netlogon.Error, d._read_byte)
@@ -175,7 +175,7 @@ class TestDecoder(object):
 
     def test_error_negative_offset(self):
         d = netlogon.Decoder()
-        s = 'foo'
+        s = b'foo'
         d.start(s)
         assert_raises(netlogon.Error, d._set_offset, -1)
 
@@ -186,23 +186,20 @@ class TestDecoder(object):
         assert_raises(netlogon.Error, d.start, ())
         assert_raises(netlogon.Error, d.start, [])
         assert_raises(netlogon.Error, d.start, {})
-        if six.PY3:
-            assert_raises(netlogon.Error, d.start, b'test')
-        else:
-            assert_raises(netlogon.Error, d.start, u'test')
+        assert_raises(netlogon.Error, d.start, u'test')
 
     def test_real_packet(self, conf):
         buf = conf.read_file('protocol/netlogon.bin')
         dec = netlogon.Decoder()
         dec.start(buf)
         res = dec.parse()
-        assert res.forest == 'freeadi.org'
-        assert res.domain == 'freeadi.org'
-        assert res.client_site == 'Default-First-Site'
-        assert res.server_site == 'Test-Site'
+        assert res.forest == b'freeadi.org'
+        assert res.domain == b'freeadi.org'
+        assert res.client_site == b'Default-First-Site'
+        assert res.server_site == b'Test-Site'
 
     def test_error_short_input(self):
-        buf = 'x' * 24
+        buf = b'x' * 24
         dec = netlogon.Decoder()
         dec.start(buf)
         assert_raises(netlogon.Error, dec.parse)
