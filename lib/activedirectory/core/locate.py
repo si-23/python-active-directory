@@ -57,7 +57,7 @@ class Locator(object):
     _maxservers = 3
     _timeout = 300  # cache entries for 5 minutes
 
-    def __init__(self, site=None, resolver=None):
+    def __init__(self, site=None, resolver=None, resolve_hostnames=False):
         """Constructor."""
         self.m_site = site
         self.m_site_detected = False
@@ -65,6 +65,7 @@ class Locator(object):
         self.m_cache = {}
         self.m_timeout = self._timeout
         self.m_resolver = resolver or dns.resolver.get_default_resolver()
+        self.m_resolve_hostnames = resolve_hostnames
 
     def locate(self, domain, role=None):
         """Locate one domain controller."""
@@ -129,6 +130,17 @@ class Locator(object):
         servers = self._select_domain_controllers(replies, role, maxservers,
                                                   addresses)
         self.m_logger.debug('found %d domain controllers' % len(servers))
+
+        if self.m_resolve_hostnames:
+            for srv in servers:
+                hostname = srv.hostname.decode('utf-8')
+                try:
+                    address = self._dns_query(hostname, 'A')[0].address
+                except IndexError:
+                    continue
+                else:
+                    srv.hostname = address.encode('utf-8')
+
         now = time.time()
         self.m_cache[key] = (now, maxservers, servers)
         return servers
