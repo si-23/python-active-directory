@@ -32,6 +32,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     package_dir={'': 'lib'},
     packages=[
@@ -41,7 +42,7 @@ setup(
         'activedirectory.util'
     ],
     tests_require=['nose', 'pexpect'],
-    install_requires=['python-ldap>=3.0', 'dnspython', 'ply==3.8', 'six'],
+    install_requires=['python-ldap>=3.0', 'dnspython', 'ply>=3.8', 'six'],
     ext_modules=[Extension(
         'activedirectory.protocol.krb5',
         ['lib/activedirectory/protocol/krb5.c'],
